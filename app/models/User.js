@@ -2,15 +2,6 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var passportLocalMongoose = require('passport-local-mongoose');
 
-var favoriteSchema = new Schema({
-  dishID: {
-    type: String,
-    required: true
-  }
-}, {
-  timestamps: true
-});
-
 var User = new Schema({
   username: String,
   password: String,
@@ -24,11 +15,14 @@ var User = new Schema({
     type: String,
     default: ''
   },
+  email: {
+    type: String,
+    default: ''
+  },
   admin: {
     type: Boolean,
     default: false
-  },
-  favorites: [favoriteSchema]
+  }
 }, {
   timestamps: true
 });

@@ -19,8 +19,12 @@ gulp.task('watch', function() {
 gulp.task('develop', function () {
   livereload.listen();
   nodemon({
-    script: 'app.js',
-    ext: 'js coffee handlebars',
+    script: './bin/www',
+    ext: 'js ts jsx tsx coffee',
+    env: {
+      'NODE_ENV': 'development',
+      'DEBUG': 'myapp:*'
+    },
     stdout: false
   }).on('readable', function () {
     this.stdout.on('data', function (chunk) {

@@ -9,7 +9,7 @@ var config = {
       name: 'confusion-backend'
     },
     port: process.env.PORT || 3000,
-    db: process.env.DB_URL || 'mongodb://localhost/confusion-backend-development',
+    db: process.env.DB_URL || 'mongodb://localhost/confusion-backend-dev',
     secretKey: '12345-67890-09876-54321',
     facebook: {
       clientID: 'YOUR FACEBOOK APP ID',
@@ -39,7 +39,7 @@ var config = {
       name: 'confusion-backend'
     },
     port: process.env.PORT || 3000,
-    db: process.env.DB_URL || 'mongodb://localhost/confusion-backend-production',
+    db: process.env.DB_URL || 'mongodb://localhost/confusion-backend-prod',
     secretKey: '12345-67890-09876-54321',
     facebook: {
       clientID: 'YOUR FACEBOOK APP ID',
