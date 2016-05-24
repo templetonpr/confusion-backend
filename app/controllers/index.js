@@ -1,8 +1,8 @@
-var express = require('express');
-var router = express.Router();
-var passport = require('passport');
-var User = require('../models/User');
-var Verify = require('../lib/verify');
+let express = require('express');
+let router = express.Router();
+let passport = require('passport');
+let User = require('../models/User');
+let Verify = require('../lib/verify');
 
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Index' });
@@ -12,18 +12,17 @@ router.route('/register')
 
   .post(function(req, res, next) { // register a user
 
-    var username = req.body.username;
-    var password = req.body.password;
-    var password2 = req.body.password2;
-    var firstName = req.body.firstName || "";
-    var lastName = req.body.lastName || "";
-    var email = req.body.email || "";
+    let username = req.body.username;
+    let password = req.body.password;
+    let password2 = req.body.password2;
+    let firstName = req.body.firstName || "";
+    let lastName = req.body.lastName || "";
+    let email = req.body.email || "";
 
     // @todo do validation checks on user input
 
-    if (password !== password2) {
-      return res.status(400).json({message: "Passwords do not match"});
-    }
+    if (password !== password2) return res.status(400).json({message: "Passwords do not match"});
+    if (username !== username.toLowerCase()) return res.status(400).json({message: "Username must be lower case"});
 
     User.register(new User({
       username: username,
@@ -47,17 +46,17 @@ router.route('/login')
 
   .post(function(req, res, next) { // login a user
 
-    var username = req.body.username;
-    var password = req.body.password;
+    let username = req.body.username.toLowerCase();
+    let password = req.body.password;
 
     // @todo validation checks on user input
 
     passport.authenticate('local', function(err, user, info) {
       if (err) { return next(err); }
       if (!user) { return res.status(401).json({err: info}); }
-      req.logIn(user, function(err) {
+      req.login(user, function(err) {
         if (err) { return res.status(500).json({err: 'Could not log in user'}); }
-        var token = Verify.getToken(user);
+        let token = Verify.getToken(user);
         // set x-access-token cookie?
         return res.status(200).json({status: 'Login successful', success: true, token: token});
       });
@@ -93,7 +92,7 @@ router.route('/favorites')
 router.route('/favorites/:favID')
 
   .delete(function(req, res, next) {
-    var favID = req.params.favID
+    let favID = req.params.favID
     res.render('index', { title: 'DELETE /favorites/ ' + favID });
   })
 ; // end route('/favorites/:favID')

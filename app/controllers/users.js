@@ -1,13 +1,13 @@
 let express = require('express');
 let router = express.Router();
 let passport = require('passport');
-let Users = require('../models/User');
+let User = require('../models/User');
 
 router.route('/')
 
   .get(function(req, res, next) { // return all users (admin)
 
-    Users.find({}, function(err, users) {
+    User.find({}, function(err, users) {
       if (err) next(err);
       let statusCode = users.length ? 200 : 404;
       return res.status(statusCode).json({
@@ -22,7 +22,7 @@ router.route('/')
   .post(function(req, res, next) { // add a new user (admin)
     // @todo modify this to allow admin to add an array of users at once
 
-    var username = req.body.username;
+    var username = req.body.username.toLowerCase();
     var password = req.body.password;
     var password2 = req.body.password2;
     var firstName = req.body.firstName || "";
@@ -53,7 +53,7 @@ router.route('/')
 
   .delete(function(req, res, next) { // delete all users (admin)
 
-    Users.remove({}, function(err, results) {
+    User.remove({}, function(err, results) {
       if (err) next(err);
       return res.status(200).json({results: results, status: "Deleted all users", statusCode: 200});
     });
@@ -63,9 +63,9 @@ router.route('/')
 router.route('/:username')
 
   .get(function(req, res, next) { // return a user
-    let username = req.params.username;
+    let username = req.params.username.toLowerCase();
 
-    Users.find({username: username}, function(err, users) {
+    User.find({username: username}, function(err, users) {
       if (err) next(err);
       let statusCode = users.length ? 200 : 404;
       return res.status(statusCode).json({
@@ -78,7 +78,7 @@ router.route('/:username')
   })
 
   .put(function(req, res, next) { // update a user (admin)
-    let username = req.params.username;
+    let username = req.params.username.toLowerCase();
 
     let doc = {};
     if ("firstname" in req.body) doc.firstname = req.body.firstname;
@@ -88,7 +88,7 @@ router.route('/:username')
     // @todo allow user to change password
     // @todo validate user info
 
-    Users.update({username: username}, doc, {runValidators: true}, function(err, raw) {
+    User.update({username: username}, doc, {runValidators: true}, function(err, raw) {
       if (err) next(err);
       let statusCode = raw.nModified ? 200 : 304;
       return res.status(statusCode).json({
@@ -100,9 +100,9 @@ router.route('/:username')
   })
 
   .delete(function(req, res, next) { // delete a user (admin)
-    let username = req.params.username;
+    let username = req.params.username.toLowerCase();
 
-    Users.remove({username: username}, function(err, results) {
+    User.remove({username: username}, function(err, results) {
       if (err) next(err);
       return res.status(200).json({results: results, status: "Deleted user " + username, statusCode: 200});
     });
