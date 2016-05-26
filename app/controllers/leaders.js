@@ -3,20 +3,25 @@ var router = express.Router();
 var passport = require('passport');
 var User = require('../models/User');
 var Leader = require('../models/Leader');
+var crud = require('../lib/crud');
 
 router.route('/')
 
   .get(function(req, res, next) { // return all leaders
 
-    Leader.find({}, function(err, results) {
-      if (err) next(err);
-      let statusCode = results.length ? 200 : 404;
-      return res.status(statusCode).json({
-        results: results,
-        count: results.length,
-        status: results.length ? "OK" : "No results found",
-        statusCode: statusCode
-      });
+    crud.get(Leader, {})
+
+    .then((results) => {
+      let statusCode = results.statusCode;
+      return res.status(statusCode).json(results);
+    })
+
+    .catch((err) => {
+      if (typeof err === 'DbResultError') { // error is from crud
+        next(err);
+      } else {
+        next(err);
+      }
     });
   })
 
@@ -31,6 +36,7 @@ router.route('/')
 
     // @todo validate info
     // @todo add support for image upload
+    // @todo redo this to have more helpful invalid field info
 
     let invalidFields = [];
     for (let field in doc) {
@@ -40,33 +46,45 @@ router.route('/')
     if (invalidFields.length > 0) {
       var response = {results: invalidFields, status: "Some fields were invalid", statusCode: 400};
       return res.status(response.statusCode).json(response);
+
+    } else { // all fields are valid
+      crud.getNone(Leader, {name: doc.name})
+
+      .then(() => {
+        return crud.insert(Leader, doc);
+      })
+
+      .then((results) => {
+        let statusCode = results.statusCode;
+        console.log(results);
+        return res.status(statusCode).json(results);
+      })
+
+      .catch((err) => {
+        if (typeof err === 'DbResultError') { // error is from crud
+          next(err);
+        } else {
+          next(err);
+        }
+      });
     }
-
-    Leader.find({}, function(err, results) {
-      if (err) next(err);
-      if (results.length > 0) return res.status(400).json({results: results, status: "That leader already exists", statusCode: 400});
-    });
-
-    Leader.create(doc, function(err, results) {
-      if (err) {
-        next(err);
-      } else {
-        var statusCode = 201;
-        return res.status(statusCode).json({
-          results: results,
-          status: "Leader created",
-          statusCode: statusCode
-        });
-      }
-
-    });
   })
 
   .delete(function(req, res, next) { // delete all leaders (admin)
 
-    Leader.remove({}, function(err, results) {
-      if (err) next(err);
-      return res.status(200).json({results: results, status: "Deleted all leaders", statusCode: 200});
+    crud.remove(Leader, {})
+
+    .then((results) => {
+      let statusCode = results.statusCode;
+      return res.status(statusCode).json(results);
+    })
+
+    .catch((err) => {
+      if (typeof err === 'DbResultError') { // error is from crud
+        next(err);
+      } else {
+        next(err);
+      }
     });
   })
 ; // end route('/')
@@ -76,16 +94,19 @@ router.route('/:leader')
   .get(function(req, res, next) { // return a leader
     var leader = req.params.leader;
 
+    crud.get(Leader, {name: leader})
 
-    Leader.find({name: leader}, function(err, results) {
-      if (err) next(err);
-      let statusCode = results.length ? 200 : 404;
-      return res.status(statusCode).json({
-        results: results,
-        count: results.length,
-        status: results.length ? "OK" : "No results found",
-        statusCode: statusCode
-      });
+    .then((results) => {
+      let statusCode = results.statusCode;
+      return res.status(statusCode).json(results);
+    })
+
+    .catch((err) => {
+      if (typeof err === 'DbResultError') { // error is from crud
+        next(err);
+      } else {
+        next(err);
+      }
     });
   })
 
@@ -100,23 +121,38 @@ router.route('/:leader')
 
     // @todo validate info
 
-    Leader.update({name: leader}, doc, {runValidators: true}, function(err, raw) {
-      if (err) next(err);
-      let statusCode = raw.nModified ? 200 : 304;
-      return res.status(statusCode).json({
-        results: raw,
-        status: raw.nModified ? "OK" : "Not modified",
-        statusCode: statusCode
-      });
+    crud.update(Leader, {name: leader}, doc)
+
+    .then((results) => {
+      let statusCode = results.statusCode;
+      return res.status(statusCode).json(results);
+    })
+
+    .catch((err) => {
+      if (typeof err === 'DbResultError') { // error is from crud
+        next(err);
+      } else {
+        next(err);
+      }
     });
   })
 
   .delete(function(req, res, next) { // delete a leader (admin)
     var leader = req.params.leader;
 
-    Leader.remove({name: leader}, function(err, results) {
-      if (err) next(err);
-      return res.status(200).json({results: results, status: "Deleted leader " + leader, statusCode: 200});
+    crud.removeOne(Leader, {name: leader})
+
+    .then((results) => {
+      let statusCode = results.statusCode;
+      return res.status(statusCode).json(results);
+    })
+
+    .catch((err) => {
+      if (typeof err === 'DbResultError') { // error is from crud
+        next(err);
+      } else {
+        next(err);
+      }
     });
   })
 ; // end route('/:leaderID')
