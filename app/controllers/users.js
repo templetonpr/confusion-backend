@@ -1,25 +1,30 @@
-let express = require('express');
-let router = express.Router();
-let passport = require('passport');
-let User = require('../models/User');
+const express = require('express');
+const router = express.Router();
+const passport = require('passport');
+const User = require('../models/User');
+const crud = require('../lib/crud');
 
 router.route('/')
 
-  .get(function(req, res, next) { // return all users (admin)
+  .get((req, res, next) => { // return all users (admin)
 
-    User.find({}, function(err, users) {
-      if (err) next(err);
-      let statusCode = users.length ? 200 : 404;
-      return res.status(statusCode).json({
-        results: users,
-        count: users.length,
-        status: users.length ? "OK" : "No results found",
-        statusCode: statusCode
-      });
+    crud.get(User, {})
+
+    .then((results) => {
+      let statusCode = results.statusCode;
+      return res.status(statusCode).json(results);
+    })
+
+    .catch((err) => {
+      if (typeof err === 'DbResultError') { // error is from crud
+        next(err);
+      } else {
+        next(err);
+      }
     });
   })
 
-  .post(function(req, res, next) { // add a new user (admin)
+  .post((req, res, next) => { // add a new user (admin)
     // @todo modify this to allow admin to add an array of users at once
 
     var username = req.body.username.toLowerCase();
@@ -51,33 +56,47 @@ router.route('/')
     });
   })
 
-  .delete(function(req, res, next) { // delete all users (admin)
+  .delete((req, res, next) => { // delete all users (admin)
 
-    User.remove({}, function(err, results) {
-      if (err) next(err);
-      return res.status(200).json({results: results, status: "Deleted all users", statusCode: 200});
+    crud.remove(User, {})
+
+    .then((results) => {
+      let statusCode = results.statusCode;
+      return res.status(statusCode).json(results);
+    })
+
+    .catch((err) => {
+      if (typeof err === 'DbResultError') { // error is from crud
+        next(err);
+      } else {
+        next(err);
+      }
     });
   })
 ; // end route('/')
 
 router.route('/:username')
 
-  .get(function(req, res, next) { // return a user
+  .get((req, res, next) => { // return a user
     let username = req.params.username.toLowerCase();
 
-    User.find({username: username}, function(err, users) {
-      if (err) next(err);
-      let statusCode = users.length ? 200 : 404;
-      return res.status(statusCode).json({
-        results: users,
-        count: users.length,
-        status: users.length ? "OK" : "No results found",
-        statusCode: statusCode
-      });
+    crud.get(User, {username: username})
+
+    .then((results) => {
+      let statusCode = results.statusCode;
+      return res.status(statusCode).json(results);
+    })
+
+    .catch((err) => {
+      if (typeof err === 'DbResultError') { // error is from crud
+        next(err);
+      } else {
+        next(err);
+      }
     });
   })
 
-  .put(function(req, res, next) { // update a user (admin)
+  .put((req, res, next) => { // update a user (admin)
     let username = req.params.username.toLowerCase();
 
     let doc = {};
@@ -88,23 +107,38 @@ router.route('/:username')
     // @todo allow user to change password
     // @todo validate user info
 
-    User.update({username: username}, doc, {runValidators: true}, function(err, raw) {
-      if (err) next(err);
-      let statusCode = raw.nModified ? 200 : 304;
-      return res.status(statusCode).json({
-        results: raw,
-        status: raw.nModified ? "OK" : "Not modified",
-        statusCode: statusCode
-      });
+    crud.update(User, {username: username}, doc)
+
+    .then((results) => {
+      let statusCode = results.statusCode;
+      return res.status(statusCode).json(results);
+    })
+
+    .catch((err) => {
+      if (typeof err === 'DbResultError') { // error is from crud
+        next(err);
+      } else {
+        next(err);
+      }
     });
   })
 
-  .delete(function(req, res, next) { // delete a user (admin)
+  .delete((req, res, next) => { // delete a user (admin)
     let username = req.params.username.toLowerCase();
 
-    User.remove({username: username}, function(err, results) {
-      if (err) next(err);
-      return res.status(200).json({results: results, status: "Deleted user " + username, statusCode: 200});
+    crud.removeOne(User, {username: username})
+
+    .then((results) => {
+      let statusCode = results.statusCode;
+      return res.status(statusCode).json(results);
+    })
+
+    .catch((err) => {
+      if (typeof err === 'DbResultError') { // error is from crud
+        next(err);
+      } else {
+        next(err);
+      }
     });
   })
 ; // end route('/:username')

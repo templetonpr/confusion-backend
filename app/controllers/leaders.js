@@ -1,13 +1,13 @@
-var express = require('express');
-var router = express.Router();
-var passport = require('passport');
-var User = require('../models/User');
-var Leader = require('../models/Leader');
-var crud = require('../lib/crud');
+const express = require('express');
+const router = express.Router();
+const passport = require('passport');
+const User = require('../models/User');
+const Leader = require('../models/Leader');
+const crud = require('../lib/crud');
 
 router.route('/')
 
-  .get(function(req, res, next) { // return all leaders
+  .get((req, res, next) => { // return all leaders
 
     crud.get(Leader, {})
 
@@ -25,7 +25,7 @@ router.route('/')
     });
   })
 
-  .post(function(req, res, next) { // add a new leader (admin)
+  .post((req, res, next) => { // add a new leader (admin)
 
     let doc = {};
     doc.name = req.body.name || null;
@@ -70,7 +70,7 @@ router.route('/')
     }
   })
 
-  .delete(function(req, res, next) { // delete all leaders (admin)
+  .delete((req, res, next) => { // delete all leaders (admin)
 
     crud.remove(Leader, {})
 
@@ -91,7 +91,7 @@ router.route('/')
 
 router.route('/:leader')
 
-  .get(function(req, res, next) { // return a leader
+  .get((req, res, next) => { // return a leader
     var leader = req.params.leader;
 
     crud.get(Leader, {name: leader})
@@ -110,7 +110,7 @@ router.route('/:leader')
     });
   })
 
-  .put(function(req, res, next) { // update a leader (admin)
+  .put((req, res, next) => { // update a leader (admin)
     var leader = req.params.leader;
 
     let doc = {};
@@ -137,7 +137,7 @@ router.route('/:leader')
     });
   })
 
-  .delete(function(req, res, next) { // delete a leader (admin)
+  .delete((req, res, next) => { // delete a leader (admin)
     var leader = req.params.leader;
 
     crud.removeOne(Leader, {name: leader})
