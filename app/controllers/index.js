@@ -76,7 +76,9 @@ router.route('/logout')
 
 router.route('/favorites')
 
-  .get(Verify.user, function(req, res, next) { // return all favorites for user
+  .all(Verify.user)
+
+  .get(function(req, res, next) { // return all favorites for user
     return res.status(200).json({favorites: "List of favorites"});
   })
 
@@ -91,7 +93,9 @@ router.route('/favorites')
 
 router.route('/favorites/:favID')
 
-  .delete(function(req, res, next) {
+  .delete(
+    Verify.user,
+    function(req, res, next) {
     let favID = req.params.favID
     res.render('index', { title: 'DELETE /favorites/ ' + favID });
   })

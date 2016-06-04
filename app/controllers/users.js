@@ -2,9 +2,12 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const User = require('../models/User');
+const Verify = require('../lib/verify');
 const crud = require('../lib/crud');
 
 router.route('/')
+
+  .all(Verify.user, Verify.admin)
 
   .get((req, res, next) => { // return all users (admin)
 
@@ -76,6 +79,8 @@ router.route('/')
 ; // end route('/')
 
 router.route('/:username')
+
+  .all(Verify.user, Verify.admin)
 
   .get((req, res, next) => { // return a user
     let username = req.params.username.toLowerCase();

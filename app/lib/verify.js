@@ -1,6 +1,7 @@
 var User = require('../models/User');
 var jwt = require('jsonwebtoken'); // Create, sign, verify tokens
 var config = require('../../config/config');
+var crud = require('../lib/crud');
 
 exports.getToken = function(user) {
   return jwt.sign(user, config.secretKey, {
@@ -34,4 +35,12 @@ exports.user = function(req, res, next) { // verify ordinary user
 
 exports.admin = function(req, res, next) {
   // verify admin user
+  if (req.decoded && req.decoded._doc.admin) {
+    req.isAdmin = true;
+    next();
+  } else {
+    var err = new Error('Not authorized');
+    err.status = 403;
+    next(err);
+  }
 }

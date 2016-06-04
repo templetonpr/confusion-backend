@@ -3,6 +3,7 @@ const router = express.Router();
 const passport = require('passport');
 const User = require('../models/User');
 const Dish = require('../models/Dish');
+const Verify = require('../lib/verify');
 const crud = require('../lib/crud');
 
 router.route('/')
@@ -18,7 +19,10 @@ router.route('/')
     .catch( (err) => { next(err); } );
   })
 
-  .post((req, res, next) => { // parse body for dish info
+  .post(
+    Verify.user,
+    Verify.admin,
+    (req, res, next) => { // parse body for dish info
       let doc = {};
       doc.name = req.body.name || null;
       doc.image = req.body.image || null;
@@ -68,7 +72,10 @@ router.route('/')
       });
   })
 
-  .delete((req, res, next) => { // delete all dishes (admin)
+  .delete(
+    Verify.user,
+    Verify.admin,
+    (req, res, next) => { // delete all dishes (admin)
 
     crud.remove(Dish, {})
 
@@ -90,7 +97,10 @@ router.route('/:dishName')
   .get((req, res, next) => { return res.status(200).json(req.dish); })
 
   // update a dish (admin)
-  .put((req, res, next) => { // parse request for new dish info
+  .put(
+    Verify.user,
+    Verify.admin,
+    (req, res, next) => { // parse request for new dish info
       let newDishInfo = {};
       if ("image" in req.body) newDishInfo.image = req.body.image;
       if ("category" in req.body) newDishInfo.category = req.body.category;
@@ -120,14 +130,17 @@ router.route('/:dishName')
       .catch( (err) => { next(err); } );
   })
 
-  .delete((req, res, next) => { // delete a dish (admin)
-    crud.remove(Dish, {_id: req.dish._id})
+  .delete(
+    Verify.user,
+    Verify.admin,
+    (req, res, next) => { // delete a dish (admin)
+      crud.remove(Dish, {_id: req.dish._id})
 
-    .then((results) => {
-      return res.status(results.statusCode).json(results);
-    })
+        .then((results) => {
+          return res.status(results.statusCode).json(results);
+        })
 
-    .catch( (err) => { next(err); } );
+        .catch( (err) => { next(err); } );
   })
 ; // end route('/:dish')
 
@@ -144,7 +157,9 @@ router.route('/:dishName/comments')
     }
   })
 
-  .post((req, res, next) => { // add a comment to dish
+  .post(
+    Verify.user,
+    (req, res, next) => { // add a comment to dish
     let comment = {
       rating: req.body.rating,
       comment: req.body.comment,
@@ -165,7 +180,10 @@ router.route('/:dishName/comments')
     .catch((err) => { next(err) });
     })
 
-  .delete((req, res, next) => { // delete comments for a dish (admin)
+  .delete(
+    Verify.user,
+    Verify.admin,
+    (req, res, next) => { // delete comments for a dish (admin)
 
     req.dish.comments = [];
 
@@ -187,7 +205,10 @@ router.route('/:dishName/comments/:commentID')
   .get((req, res, next) => { return res.status(200).json(req.comment); })
 
   // edit a comment of a dish (admin or author)
-  .put((req, res, next) => { // parse body for comment info
+  .put(
+    Verify.user,
+    Verify.admin,
+    (req, res, next) => { // parse body for comment info
       let comment = {};
       if (req.body.rating) comment.rating = req.body.rating;
       if (req.body.comment) comment.comment = req.body.comment;
@@ -217,20 +238,23 @@ router.route('/:dishName/comments/:commentID')
       .catch((err) => { next(err) });
   })
 
-  .delete((req, res, next) => { // delete comment for a dish (admin or author)
-    for (let i = 0; i < req.dish.comments.length; i++) {
-      if (req.dish.comments[i]._id == req.comment._id) {
-        console.log("found comment to delete at index " + i);
-        req.dish.comments.splice(i, 1); // remove comment from req.dish
-        break;
+  .delete(
+    Verify.user,
+    Verify.admin,
+    (req, res, next) => { // delete comment for a dish (admin or author)
+      for (let i = 0; i < req.dish.comments.length; i++) {
+        if (req.dish.comments[i]._id == req.comment._id) {
+          console.log("found comment to delete at index " + i);
+          req.dish.comments.splice(i, 1); // remove comment from req.dish
+          break;
+        }
       }
-    }
-    crud.update(Dish, {_id: req.dish._id}, req.dish)
+      crud.update(Dish, {_id: req.dish._id}, req.dish)
 
-    .then((results) => { return res.status(results.statusCode).json(results); })
+      .then((results) => { return res.status(results.statusCode).json(results); })
 
-    .catch((err) => { next(err) });
-  })
+      .catch((err) => { next(err) });
+    })
 ; // end route('/:dish/comments/:commentID')
 
 
